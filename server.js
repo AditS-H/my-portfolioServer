@@ -16,12 +16,28 @@ app.use(helmet({
   contentSecurityPolicy: false, // Allow for better email HTML rendering
 }));
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://adit-portfolio-psi.vercel.app" // ✅ no trailing slash
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || ['http://localhost:3000', 'http://localhost:5173','https://adit-portfolio-psi.vercel.app'],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
